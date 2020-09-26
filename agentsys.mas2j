@@ -1,0 +1,12 @@
+MAS agentsys{
+	infrastructure: Centralised
+	environment: SysEnv
+	agents:
+		expertAgent;
+		humanAgent;
+	agent1;
+	agent2;
+	agent3;
+	agentMaster;
+ 	aslSourcePath: "src/asl";
+}

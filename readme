@@ -1,0 +1,12 @@
+1. Pentru a antrena modelele si a crea fisierele asl pentru agent1, agent2 si agent3:
+	$ cd models
+	$ python3 ./main.py
+2. Pentru a rula aplicatia jason		
+	-se deschide agentsys.mas2j in jedit
+	
+3. In folderul test sunt 3 teste, cate unul pentru fiecare clasa 
+	-test1.txt: retinopatie diabetica
+	-test2.txt: normal
+	-test3.txt: dmlv
+	-in fisierele testN_scaled.txt este testul corespunzator cu valorile scalate
+	Pentru a schimba testul pe care ruleaza se modifica in src/asl/humanAgent.asl numele fisierului (filename)

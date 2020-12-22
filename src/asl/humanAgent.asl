@@ -21,7 +21,7 @@ filename(test1).
 	+paramValues(Values);
 	+scaledValues(ScaledValues);
 	?name(AgentName);
-	.send(agentMaster, tell, paramForDiag(Names,Values,ScaledValues, AgentName)).
+	.send(agentMaster, achieve, paramForDiag(Names,Values, AgentName)).
 
 
 +systemBusy <-
@@ -33,8 +33,17 @@ filename(test1).
 <-
 	?paramName(Names);
 	?paramValues(Values);
-	?scaledValues(ScaledValues);
 	?name(AgentName);
 
-	.send(agentMaster, tell, paramForDiag(Names,Values,ScaledValues, AgentName)).
+	.send(agentMaster, tell, paramForDiag(Names,Values,AgentName)).
+	
+	
++result(Expl, Arg) <-
+	.print("Received result \n");
+//	.print(Expl, " This diagnosis was chosen because ",Arg)
+	
+	
+	.
+	
+	
 	

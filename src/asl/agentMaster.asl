@@ -1,14 +1,11 @@
 listNames([]).
 listValues([]).
-listScaledValues([]).
 free.
 count(0).
 
-diagnosis(0, [], []).
-diagnosis(1, [], []).
-diagnosis(2, [], []).
 
-+paramForDiag(Names,Values,ScaledValues,AgentName):
+
++!paramForDiag(Names,Values,AgentName):
 	free
 	<- 
 		-free;
@@ -17,136 +14,153 @@ diagnosis(2, [], []).
 		+listNames(Names);
 		-listValues(X);
 		+listValues(Values);
-		-listScaledValues(X);
-		+listScaledValues(ScaledValues);
 		.print("Human ", AgentName, " wants the diagnosis for ", Values);
 		.print("The system is available");
-
+ 		 
+	
 		!startDiagnose.
 	
-+paramForDiag(Name,Values,ScaledValues,AgentName):
++!paramForDiag(Name,Values,AgentName):
 	busy
 	<- 
-		.send(humanAgent, tell, systemBusy);
-		.abolish(paramForDiag(Name,Values,ScaledValues,AgentName));
+		.send(humanAgent, achieve, systemBusy);
+		.abolish(paramForDiag(Name,Values,AgentName));
 		.print("The system is not available right now").
 		
 +!startDiagnose <-
 	?listNames(X);
 	.print("Sending agents signal to start diagnosis");
-	.broadcast(tell, diagnose)
-	.print(X).
+	.broadcast(achieve, diagnose)
+	.wait(50);
+	!completeDiagnosis;
+ 
+ .
 	
 	
-+needs(Params, No)[source(agent3)]<-
-	?listNames(Names);
-	?listScaledValues(Values);
-	.print("agent3 needs ", Params, " (", No, ") ");
-	myLib.getParameters(Names,Values,Params, ParamsV); 
-	.print("Send " ,ParamsV," with ", No, " to agent3");
-	.send(agent3, tell, diagnose(ParamsV, No))
-	.	
+
 	
-+needs(Params, No)[source(Sender)]<-
++!needs(Params, No)[source(Sender)]<-
 	?listNames(Names);
 	?listValues(Values);
 	
 	.print(Sender, " needs ", Params, " (", No, ") ");
 	myLib.getParameters(Names,Values,Params, ParamsV);
 	.print("Send " ,ParamsV," with ", No, " to ", Sender);
-	.send(Sender, tell, diagnose(ParamsV, No))
+	.send(Sender, achieve, diagnose(ParamsV, No))
 	.
 
-+myScore(S)[source(Sender)] <- 
++!myScore(S)[source(Sender)] <- 
 	.print(Sender, " has training score: ", S);
 	+score(Sender, S).
 
 
-+newDiagnosis(0, Prob, List)[source(Sender)]:
-	diagnosis(0, L, A)
-	 <-
 
-	+diag(Sender, 0, Prob, List);
-	 .concat(L,List,L2);
-	 .concat(A, [Sender], A2);
-	 -diagnosis(0,L,A);
-	 +diagnosis(0,L2,A2);
-	 	.print("Received new normal diagnosis from ", Sender);
-	.print("\n with arguments: ", List);
-.wait(500);
-	 +completeDiagnosis;
-
-	.	
-+newDiagnosis(1, Prob, List)[source(Sender)]:
-	diagnosis(1, L, A)
-	 <-
-
-	+diag(Sender, 1, Prob, List);
-	 .concat(L,List,L2);
-	 .concat(A, [Sender], A2);
-	 -diagnosis(1,L,A);
-	 +diagnosis(1,L2,A2);
-	 	 		.print("Received new diabetic retinopathy diagnosis from ", Sender);
-	.print("\n with arguments: ", List);
-	 .wait(500);
-	 +completeDiagnosis;
-
-
-	.	
-
-
-+newDiagnosis(2, Prob, List)[source(Sender)]:
-	diagnosis(2, L, A)
-	 <-
-
-	+diag(Sender, 2, Prob, List);
-	 .concat(L,List,L2);
-	 .concat(A, [Sender], A2);
-	 -diagnosis(2,L,A);
-	 +diagnosis(2,L2,A2);
-	 		.print("Received new amd diagnosis from ", Sender);
-	.print("\n with arguments: ", List);
-.wait(500);
-	 +completeDiagnosis;
-
-	.
-
-	
-
-+newDiagnosis(D, Prob, [])[source(Sender)]:
++!newDiagnosis(D, Prob, [])[source(Sender)]:
 	diagnosis(D, L, A)
 	 <-
   
 	+diag(Sender, D, Prob, []);
 
-	 .concat(A, [Sender], A2);
+	 .concat(A, Sender, A2);
 	 -diagnosis(D,L,A);
 	 +diagnosis(D,L,A2)
 	.print("Received new diagnosis without arguments: ");
-		 
-		+completeDiagnosis.	
+.
+
+
+
++!newDiagnosis(0, Prob, List)[source(Sender)]
+	 <-
+
+	+diag(Sender, 0, Prob, List);
+
+		 for(.member(M, List))
+	 { +args(0,M);}
+	
+	 +ag(0,Sender);
+	 	.print("Received new normal diagnosis from ", Sender, "\n with arguments: ", List);
+	
+
+
+	.	
++!newDiagnosis(1, Prob, List)[source(Sender)]
+//	diagnosis(1, L, A)
+	 <-
+
+	+diag(Sender, 1, Prob, List);
+//	 .concat(L,List,L2);
+//	 .concat(A, [Sender], A2);
+//	 -diagnosis(1,L,A);
+	 for(.member(M, List))
+	 { +args(1,M);}
+	
+	 +ag(1,Sender);
+	 .print("Received new diabetic retinopathy diagnosis from ", Sender, "\n with arguments: ", List);
+
+	
+
+
+
+	.	
+
+
++!newDiagnosis(2, Prob, List)[source(Sender)]
+//	diagnosis(2, L, A)
+	 <-
+
+	for(.member(M, List))
+	 { +args(2,M);}
+	
+	 +ag(2,Sender);
+	+diag(Sender, 2, Prob, List); 
+
+	 .concat(A, [Sender], A2);
+	 
+	 
+	 .print("Received new amd diagnosis from ", Sender, "\n with arguments: ", List);
+	
+
+
+	.
+
+	
 
 
 	
-+completeDiagnosis:
++!completeDiagnosis:
  diag(agent1, D1, Prob1, List1) &
  diag(agent2, D2, Prob2, List2) &
  diag(agent3, D3, Prob3, List3)  
  <-
 
 	.print("Received diagnosis from all agents. Choosing final diagnosis ");
+    .findall(A0,args(0,A0), Arguments0);
+    .findall(L0,ag(0,L0), Agents0);
+    .findall(A1,args(1,A1), Arguments1);
+    .findall(L1,ag(1,L1), Agents1);
+    .findall(A2,args(2,A2), Arguments2);
+    .findall(L2,ag(2,L2), Agents2);
+//      .print(Agents0, Arguments0);
+//      .print(Agents1, Arguments1);
+//       .print(Agents2, Arguments2);
+      
+     +diagnosis(0,Arguments0, Agents0);
+     +diagnosis(1,Arguments1, Agents1);
+     +diagnosis(2,Arguments2, Agents2);
+      .wait(1000);
+ 
       
    +completeDiagnosis(3);
    
    .
 	
 	
-+completeDiagnosis
++!completeDiagnosis
 	<- 
 
-		-completeDiagnosis;
+		.wait(1000);			
 		.print("Waiting...");
-
+		!completeDiagnosis;
 		.	
 //toti agentii au pus diagnosticul 0
 +completeDiagnosis(X):
@@ -258,13 +272,13 @@ diagnosis(2, [], []).
 
 	for ( .member(Ag, A0) ){
 		.print("Try to convince ", Ag, " for diagnosis amd" );
-        .send(Ag, tell, convince(0, 1 , L1, Names, Values)) ;
+        .send(Ag, tell, convince(0, 2 , L1, Names, Values)) ;
        };
        
-    for ( .member(Ag, A2) ){
+    for ( .member(Ag, A1) ){
     	
 		.print("Try to convince ", Ag, " for diagnosis amd" );
-        .send(Ag, tell, convince(2, 1 , L1, Names, Values)) ;
+        .send(Ag, tell, convince(1, 2 , L1, Names, Values)) ;
        };
        		.wait(15);
        !finaldiagnose
@@ -287,7 +301,7 @@ diagnosis(2, [], []).
 
  	!askExpert.
 
-+expertNormal <-
++!expertNormal <-
 
 	?diagnosis(0,L0,A0) ;
  	?diagnosis(1,L1,A1) ;
@@ -310,7 +324,7 @@ diagnosis(2, [], []).
        		.wait(15);
               !finaldiagnose
        .
-+expertNotNormal <-
++!expertNotNormal <-
 	.print("Expert said that diagnosis is not normal ");
 	?diagnosis(0,L0,A0) ;
  	?diagnosis(1,L1,A1) ;
@@ -322,7 +336,7 @@ diagnosis(2, [], []).
     	
 		.print("Try to convince ", Ag, " to change its normal diagnosis in dmlv");
 
-        .send(Ag, tell, convince(0, 2 , L2, Names, Values)) ;
+        .send(Ag, achieve, convince(0, 2 , L2, Names, Values)) ;
       	.wait(10);
       	+testChanged(Ag);
        };
@@ -339,7 +353,7 @@ diagnosis(2, [], []).
 	?listValues(Values) ;
 	.print(Ag, "didn't change its normal diagnosis in dmlv")
 	.print("Try to convince ", Ag, " to change its normal diagnosis in diabetic retinopathy");
-	.send(Ag, tell, convince(0, 1 , L2, Names, Values)) ;
+	.send(Ag, achieve, convince(0, 1 , L2, Names, Values)) ;
    		.wait(15);
               !finaldiagnose
 	.
@@ -350,11 +364,11 @@ diagnosis(2, [], []).
 	   		.wait(15);
               !finaldiagnose
 	.
-+changedDiagnosis([], [], ND)[source(Sender)]
++!changedDiagnosis([], [], ND)[source(Sender)]
 <- 
 .print(Sender, " changed its diagnosis").
 	
-+changedDiagnosis([], ProListC, ND)[source(Sender)]
++!changedDiagnosis([], ProListC, ND)[source(Sender)]
  <-
   ?diag(Sender, D, Prob, L);
  -diag(Sender, D, Prob, L);
@@ -369,7 +383,7 @@ diagnosis(2, [], []).
  
  .
 
-+changedDiagnosis(ContraListP, [], ND)[source(Sender)]
++!changedDiagnosis(ContraListP, [], ND)[source(Sender)]
  <-
  ?diag(Sender, D, Prob, L);
  -diag(Sender, D, Prob, L);
@@ -381,7 +395,7 @@ diagnosis(2, [], []).
  .
 
 
-+changedDiagnosis(ContraListP, ProListC, ND)[source(Sender)]
++!changedDiagnosis(ContraListP, ProListC, ND)[source(Sender)]
  <-
  
 
@@ -400,7 +414,7 @@ diagnosis(2, [], []).
  
  .
 
-+notChangedDiagnosis(ProListP, [], D)[source(Sender)]
++!notChangedDiagnosis(ProListP, [], D)[source(Sender)]
  <-
   ?diag(Sender, D, Prob, L);
  -diag(Sender, D, Prob, L);
@@ -414,7 +428,7 @@ diagnosis(2, [], []).
 
  .
 
-+notChangedDiagnosis([], ContraListC, D)[source(Sender)]
++!notChangedDiagnosis([], ContraListC, D)[source(Sender)]
  <-
   ?diag(Sender, D, Prob, L);
  -diag(Sender, D, Prob, L);
@@ -431,7 +445,7 @@ diagnosis(2, [], []).
  .
 
 
-+notChangedDiagnosis(ProListP, ContraListC, D)[source(Sender)]
++!notChangedDiagnosis(ProListP, ContraListC, D)[source(Sender)]
  <-
    ?diag(Sender, D, Prob, L);
  -diag(Sender, D, Prob, L);
@@ -447,7 +461,7 @@ diagnosis(2, [], []).
 +!finaldiagnose
  <-
  .wait(30);
- .print("Final diagnosis..");
+
  ?diag(agent1, D1, Prob1, List1);
  ?diag(agent2, D2, Prob2, List2);
  ?diag(agent3, D3, Prob3, List3);
@@ -456,23 +470,43 @@ diagnosis(2, [], []).
  ?score(agent2, S2);
  ?score(agent3, S3);
 
- myLib.choseDiagnosisAndExplain([agent1, agent2, agent3], [D1, D2, D3], [Prob1, Prob2, Prob3] , [List1, List2, List3], [S1,S2,S3], F);
+ myLib.choseDiagnosisAndExplain([agent1, agent2, agent3], [D1, D2, D3], [Prob1, Prob2, Prob3] , [List1, List2, List3], [S1,S2,S3], F, Expl);
  ?diagnosis(F, L, A);
+
  myLib.explainArgs(L, E1);
  .print("This diagnosis was chosen because " , E1);
- !askExpert
+ .send(simAgent, tell, result(Expl, E1));
+ !askExpert;
   
  .
  
 
-+!askExpert <-
+
+
++!askExpert<-
 	.print("Asking expert opinion");
 	?listNames(Names);
+//	.print(Names);
 	?listValues(Values);
+//	.print(Values);
 	myLib.getParameters(Names,Values, [c0t, s1t, s2t, t1t,t2t, n1t, n2t, i1t, i2t], ParamsV); 
-	.send(expertAgent, tell, diagnoseEXPERT(ParamsV));
+//		.print(ParamsV);
+	.send(expertAgent, achieve, diagnoseEXPERT(ParamsV));
+	.wait(200);
 	-busy;
 	+free;
+	-diagnosis(0,[],[]);
+	-diagnosis(1,[],[]);
+	-diagnosis(2,[],[]);
 	.broadcast(tell, systemAvailable)
-	.
-	 
+	.	 
+
+
+	
+	
+	
+	
+	
+	
+	
+	

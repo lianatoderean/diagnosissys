@@ -20,6 +20,7 @@ public class requestDiagnosis extends DefaultInternalAction {
        	String filename = args[0].toString();
        	ts.getAg().getLogger().info("test/"+filename);			
     	ArrayList<String> strings = new ArrayList();
+    	// execute the internal action
         ListTerm values = new ListTermImpl();
         ListTerm scaledValues = new ListTermImpl();
         BufferedReader reader;
@@ -43,9 +44,7 @@ public class requestDiagnosis extends DefaultInternalAction {
         	i = 0;
         	for (String param: lineS.split(delims))
         	{
-        		if (i%2 == 0)
-        			names.add(new StringTermImpl(param));
-        		else 
+        		if (i%2 == 1)
         			scaledValues.add(new NumberTermImpl(Double.parseDouble(param)));
         		i++;
         	}
@@ -57,6 +56,7 @@ public class requestDiagnosis extends DefaultInternalAction {
         	ts.getAg().getLogger().info("Input parameters not found");
         }
         
+        // everything ok, so returns true
         return  un.unifies(args[1],(ListTerm) names) && un.unifies(args[2], (ListTerm) values) && un.unifies(args[3], (ListTerm) scaledValues);
     }
 }

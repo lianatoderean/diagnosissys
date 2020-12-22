@@ -1,12 +1,32 @@
-1. Pentru a antrena modelele si a crea fisierele asl pentru agent1, agent2 si agent3:
-	$ cd models
-	$ python3 ./main.py
-2. Pentru a rula aplicatia jason		
-	-se deschide agentsys.mas2j in jedit
-	
-3. In folderul test sunt 3 teste, cate unul pentru fiecare clasa 
-	-test1.txt: retinopatie diabetica
-	-test2.txt: normal
-	-test3.txt: dmlv
-	-in fisierele testN_scaled.txt este testul corespunzator cu valorile scalate
-	Pentru a schimba testul pe care ruleaza se modifica in src/asl/humanAgent.asl numele fisierului (filename)
+1. TRAINING THE MODELS
+- Requirements:
+	 	python 3.6
+		pip
+		numpy
+		pandas
+		scikit-learn
+		matplotlib
+		graphviz
+		GSL GNU
+		Rule Matrix: $ pip install git+https://github.com/rulematrix/rule-matrix-py.git
+ - Train the models and generate asl files for the arguing agents
+ 	  $ cd models
+	  $ python3 ./main.py
+	  
+	  
+2. JASON - AgentSpeak
+-Requirements:
+	JAVA JDK >=1.8
+	JASON ->
+	 		download jason from https://sourceforge.net/projects/jason/files/jason/
+			unzip
+			open jedit: $ java -jar jedit.jar
+							- set JAVA_HOME -> JDK location
+							- set Jason -> jason.jar location
+ -Run agents environment:
+ 			- open agentsys.mas2j in jedit and run
+ -In folder test:
+ 				-test1.txt <- test sample for diabetic retinopathy
+				-test2.txt <- test sample for normal patient
+				-test3.txt <- test sample for amd
+			(in order to select a test -> change filename from src/asl/humanAgent.asl file)
